@@ -1,7 +1,7 @@
 # Pypes
 Build a pipes and filters architecture using pure funcitons as filters:
 
-'''python
+```python
 from pipeline import execute, pipeline_node
 
 
@@ -31,4 +31,4 @@ increment.connect(log)
 double.connect(log)
 
 execute(count)
-'''
+```
