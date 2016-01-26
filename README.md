@@ -1,10 +1,34 @@
-# pypes
-Pipes and filters architecture implementation
+# Pypes
+Build a pipes and filters architecture using pure funcitons as filters:
 
-Use pure functions as filters:
+'''python
+from pipeline import execute, pipeline_node
 
-def increment_filter(n):
-    return n + 1
 
-def sum_and_sub(a, b , c)
-    return (a + b + c, a - b - c)
+@pipeline_node
+def count():
+    for i in range(100):
+        yield i
+
+
+@pipeline_node
+def increment(i):
+    return i + 1
+
+
+@pipeline_node
+def double(i):
+    return i * 2
+
+
+@pipeline_node
+def log(i):
+    print(i)
+
+
+count.connect(increment, double)
+increment.connect(log)
+double.connect(log)
+
+execute(count)
+'''

@@ -1,25 +1,29 @@
-from Pipeline import Pipeline
+from pipeline import execute, pipeline_node
 
 
+@pipeline_node
 def count():
-    for i in range(1000):
+    for i in range(100):
         yield i
 
 
+@pipeline_node
 def increment(i):
     return i + 1
 
 
-def combine(a, b):
-    return (b, a),
+@pipeline_node
+def double(i):
+    return i * 2
 
 
+@pipeline_node
 def log(i):
     print(i)
 
 
-p = Pipeline()
-p.source(count)
-p.par(combine, combine)
-p.sink(log)
-p.start()
+count.connect(increment, double)
+increment.connect(log)
+double.connect(log)
+
+execute(count)
