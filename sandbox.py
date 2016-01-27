@@ -1,9 +1,9 @@
-from pipeline import execute, pipeline_node
+from pipeline import execute_threads, execute_processes, pipeline_node, PipelineNode
 
 
 @pipeline_node
 def count():
-    for i in range(100):
+    for i in range(50):
         yield i
 
 
@@ -12,9 +12,7 @@ def increment(i):
     return i + 1
 
 
-@pipeline_node
-def double(i):
-    return i * 2
+increment2 = PipelineNode(increment)
 
 
 @pipeline_node
@@ -22,8 +20,9 @@ def log(i):
     print(i)
 
 
-count.connect(increment, double)
+count.connect(increment, increment2)
 increment.connect(log)
-double.connect(log)
+increment2.connect(log)
 
-execute(count)
+execute_threads(count)
+execute_processes(count)
