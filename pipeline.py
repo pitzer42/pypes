@@ -8,14 +8,16 @@ def pipeline_node(func):
 
 class PipelineNode:
     def __init__(self, func):
-        self.func = func
+        self.__name__ = func.__name__
+        self.__doc__ = func.__doc__
+        self._func = func
         self.neighbors = []
 
     def connect(self, *args):
         self.neighbors += args
 
     def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
+        return self._func(*args, **kwargs)
 
 
 def execute_threads(src):
