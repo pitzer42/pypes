@@ -1,50 +1,33 @@
 import unittest
 import queue
 import multiprocessing
-from pipeline import pipeline_node, PipelineNode, execute_threads, execute_processes
+from pipeline import execute_threads, execute_processes
 from test_functions import count, increment, save_to
+
+one_until_ten = list(range(1, 11))
 
 
 class TestPipelineExecution(unittest.TestCase):
+    def setUp(self):
+        count.neighbors = []
+        increment.neighbors = []
+
     def test_pipelines_can_be_executed_in_threads(self):
-        numbers = queue.Queue()
-
-        count_node = PipelineNode(count)
-        increment_node = PipelineNode(increment)
-        save_node = PipelineNode(save_to(numbers))
-
-        count_node.connect(increment_node)
-        increment_node.connect(save_node)
-
-        execute_threads(count_node)
-
-        while numbers.qsize() < 10:
-            pass
-        one_until_ten = list(range(1, 11))
-
+        t_queue = queue.Queue()
+        count.connect(increment)
+        increment.connect(save_to(t_queue))
+        execute_threads(count)
         result = []
-        while len(result) < 10:
-            result.append(numbers.get())
+        while len(result) < count.until:
+            result.append(t_queue.get())
+        self.assertEqual(result, one_until_ten)
 
-        self.assertSequenceEqual(result, one_until_ten)
-
-    def skip_test_pipelines_can_be_executed_in_threads(self):
-        numbers = multiprocessing.Queue()
-
-        count_node = PipelineNode(count)
-        increment_node = PipelineNode(increment)
-        save_node = PipelineNode(save_to(numbers))
-
-        count_node.connect(increment_node)
-        increment_node.connect(save_node)
-
-        execute_processes(count_node)
-
+    def test_pipelines_can_be_executed_in_processes(self):
+        p_queue = multiprocessing.Queue()
+        count.connect(increment)
+        increment.connect(save_to(p_queue))
+        execute_processes(count)
         result = []
-        while len(result) < 10:
-            result.append(numbers.get())
-
-        while numbers.qsize() < 10:
-            pass
-        one_until_ten = list(range(1, 11))
-        self.assertSequenceEqual(result, one_until_ten)
+        while len(result) < count.until:
+            result.append(p_queue.get())
+        self.assertEqual(result, one_until_ten)

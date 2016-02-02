@@ -3,8 +3,9 @@ from pipeline import pipeline_node
 
 @pipeline_node
 def count():
-    for i in range(10):
+    for i in range(count.until):
         yield i
+count.until = 10
 
 
 @pipeline_node
