@@ -1,4 +1,4 @@
-from pipeline import pipeline_node
+from nodes import pipeline_node
 
 
 @pipeline_node

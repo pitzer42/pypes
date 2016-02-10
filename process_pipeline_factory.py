@@ -4,35 +4,21 @@ import inspect
 from multiprocessing import Process, Queue
 from random import random
 
-
-def process_pipeline_from_graph(src):
-    node_to_process = {src: Source(src)}
-    working = [src]
-    while len(working) > 0:
-        node = working.pop()
-        node_p = node_to_process[node]
-        for neighbor in node.neighbors:
-            if neighbor not in node_to_process:
-                node_to_process[neighbor] = create_process(neighbor)
-                working.append(neighbor)
-            neighbor_p = node_to_process[neighbor]
-            connect_buffers(node_p, neighbor_p)
-    return node_to_process.values()
+from parallel_pipeline_factory import ParallelPipelineFactory
 
 
-def create_process(n):
-    if len(n.neighbors) > 0:
-        return Filter(n)
-    return Sink(n)
+class ProcessPipelineFactory(ParallelPipelineFactory):
+    def create_buffer(self):
+        return Queue()
 
+    def create_source(self, func):
+        return Source(func)
 
-def connect_buffers(a, b):
-    if a.out_buffer is None and b.in_buffer is None:
-        a.out_buffer = b.in_buffer = default_pipe()
-    elif b.in_buffer is None:
-        b.in_buffer = a.out_buffer
-    else:
-        a.out_buffer = b.in_buffer
+    def create_filter(self, func):
+        return Filter(func)
+
+    def create_sink(self, func):
+        return Sink(func)
 
 
 class Source(Process):
@@ -90,10 +76,6 @@ class Sink(Process):
 
 STOP_FLAG = StopIteration
 MAX_SLEEP_SECONDS = 0.0001
-
-
-def default_pipe():
-    return Queue()
 
 
 def sleep():

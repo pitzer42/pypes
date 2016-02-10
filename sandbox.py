@@ -1,4 +1,6 @@
-from pipeline import execute_threads, execute_processes, pipeline_node, PipelineNode
+from nodes import pipeline_node, PipelineNode
+from process_pipeline_factory import ProcessPipelineFactory
+from thread_pipeline_factory import ThreadPipelineFactory
 
 
 @pipeline_node
@@ -24,5 +26,8 @@ count.connect(increment, increment2)
 increment.connect(log)
 increment2.connect(log)
 
-execute_threads(count)
-execute_processes(count)
+t_pype = ThreadPipelineFactory()
+t_pype.run_pipeline(count)
+
+p_pype = ProcessPipelineFactory()
+p_pype.run_pipeline(count)

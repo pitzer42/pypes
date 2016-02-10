@@ -5,35 +5,27 @@ from queue import Queue
 from threading import Thread
 from random import random
 
-
-def thread_pipeline_from_graph(src):
-    node_to_thread = {src: Source(src)}
-    working = [src]
-    while len(working) > 0:
-        node = working.pop()
-        node_t = node_to_thread[node]
-        for neighbor in node.neighbors:
-            if neighbor not in node_to_thread:
-                node_to_thread[neighbor] = create_thread(neighbor)
-                working.append(neighbor)
-            neighbor_t = node_to_thread[neighbor]
-            connect_buffers(node_t, neighbor_t)
-    return node_to_thread.values()
+from parallel_pipeline_factory import ParallelPipelineFactory
 
 
-def create_thread(n):
-    if len(n.neighbors) > 0:
-        return Filter(n)
-    return Sink(n)
+class ThreadPipelineFactory(ParallelPipelineFactory):
+    """
+    Execute a pipeline with threads. If you are using cpython interpreter this only benefits IO bound pipelines.
+    See https://wiki.python.org/moin/GlobalInterpreterLock
+    :param src: root node
+    """
 
+    def create_buffer(self):
+        return Queue()
 
-def connect_buffers(a, b):
-    if a.out_buffer is None and b.in_buffer is None:
-        a.out_buffer = b.in_buffer = default_pipe()
-    elif b.in_buffer is None:
-        b.in_buffer = a.out_buffer
-    else:
-        a.out_buffer = b.in_buffer
+    def create_source(self, func):
+        return Source(func)
+
+    def create_filter(self, func):
+        return Filter(func)
+
+    def create_sink(self, func):
+        return Sink(func)
 
 
 class Source(Thread):
@@ -91,10 +83,6 @@ class Sink(Thread):
 
 STOP_FLAG = StopIteration()
 MAX_SLEEP_SECONDS = 0.0001
-
-
-def default_pipe():
-    return Queue()
 
 
 def sleep():

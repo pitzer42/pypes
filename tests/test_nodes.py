@@ -1,9 +1,9 @@
-from test_functions import count, increment
+from dummy_functions import count, increment
 from unittest import TestCase
-from pipeline import pipeline_node, PipelineNode
+from nodes import PipelineNode
 
 
-class TestPipelineNode(TestCase):
+class TestNodes(TestCase):
     def test_create_nodes_using_classes(self):
         func_node = PipelineNode(count)
         self.assertIsNotNone(func_node.neighbors)
